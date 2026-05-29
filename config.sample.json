@@ -1,0 +1,45 @@
+{
+  "runHistoryCount": 5,
+  "instances": [
+    {
+      "name": "Production - Main",
+      "server": "SQLPROD01\\INSTANCE1",
+      "jobs": [
+        {
+          "name": "Nightly Full Backup",
+          "schedule": "daily",
+          "expectedStartTime": "02:00",
+          "estimatedDurationMinutes": 45,
+          "lookbackHours": 12
+        },
+        {
+          "name": "Weekly Index Rebuild",
+          "schedule": ["Sun"],
+          "expectedStartTime": "03:30",
+          "estimatedDurationMinutes": 90,
+          "lookbackHours": 24
+        },
+        {
+          "name": "ETL Load - Sales",
+          "schedule": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          "expectedStartTime": "06:00",
+          "estimatedDurationMinutes": 30,
+          "lookbackHours": 8
+        }
+      ]
+    },
+    {
+      "name": "Reporting",
+      "server": "SQLRPT01",
+      "jobs": [
+        {
+          "name": "Cube Refresh",
+          "schedule": "daily",
+          "expectedStartTime": "05:00",
+          "estimatedDurationMinutes": 20,
+          "lookbackHours": 10
+        }
+      ]
+    }
+  ]
+}

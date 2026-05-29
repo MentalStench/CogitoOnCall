@@ -1,0 +1,3 @@
+config.json
+tests/_*.ps1
+tests/_*.txt

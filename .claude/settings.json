@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\dev\\\\CogitoOnCall\" -Force | Select-Object Name, @{Name=\"Type\"; Expression={if \\($_.PSIsContainer\\) { \"DIR\" } else { \"FILE\" }}} | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\dev\\\\CogitoOnCall\" -Recurse -File | Select-Object -First 30 | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\dev\\\\CogitoOnCall\" -Force -Recurse | ForEach-Object { $_.FullName })",
+      "Bash(pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString\\(\\); [Threading.Thread]::CurrentThread.GetApartmentState\\(\\); try { Add-Type -AssemblyName System.Data -ErrorAction Stop; [bool]\\([System.Data.SqlClient.SqlConnection]\\) } catch { '\\\\''System.Data.SqlClient: NOT FOUND'\\\\'' }; try { [bool]\\([Microsoft.Data.SqlClient.SqlConnection]\\) } catch { '\\\\''Microsoft.Data.SqlClient: NOT FOUND'\\\\'' }; try { Add-Type -AssemblyName PresentationFramework -ErrorAction Stop; '\\\\''WPF: OK'\\\\'' } catch { '\\\\''WPF: NOT FOUND'\\\\'' }')",
+      "Bash(pwsh -NoProfile -Command ' *)",
+      "Bash(pwsh -NoProfile -File ./tests/Test-Analysis.ps1)",
+      "Bash(Select-Object -Last 14)",
+      "PowerShell(pwsh -NoProfile -File ./tests/Test-Analysis.ps1; \"EXITCODE=$LASTEXITCODE\")",
+      "Read(//mnt/c/dev/CogitoOnCall/src/**)",
+      "Bash(sed -n '139,235p' \"c:/dev/CogitoOnCall/src/JobAnalysis.ps1\")",
+      "PowerShell(\"test output 123\")",
+      "PowerShell(pwsh -NoProfile -File \"c:\\\\dev\\\\CogitoOnCall\\\\tests\\\\Test-Analysis.ps1\" 2>&1 | Out-File \"c:\\\\dev\\\\CogitoOnCall\\\\tests\\\\_run.txt\" -Encoding utf8; \"exit=$LASTEXITCODE\")",
+      "PowerShell(pwsh -NoProfile -File \"c:\\\\dev\\\\CogitoOnCall\\\\tests\\\\_ui_probe.ps1\" 2>&1; \"exit=$LASTEXITCODE\")",
+      "PowerShell(pwsh -NoProfile -File \"c:\\\\dev\\\\CogitoOnCall\\\\tests\\\\Test-Analysis.ps1\"; \"ANALYSIS_EXIT=$LASTEXITCODE\")",
+      "PowerShell(Get-ChildItem \"c:\\\\dev\\\\CogitoOnCall\\\\tests\" -File | ForEach-Object { $_.Name })",
+      "PowerShell(gh --version)",
+      "PowerShell(gh auth status 2>&1)",
+      "PowerShell(git init)",
+      "PowerShell(git add .)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\morga\\.claude\\projects\\c--dev-CogitoOnCall\\memory"
+    ]
+  }
+}
