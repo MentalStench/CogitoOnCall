@@ -189,7 +189,7 @@ function New-InstanceSection {
     }
     else {
         # Problems first, then by name.
-        $sorted = $Instance.Jobs | Sort-Object @{ Expression = { -not $_.IsProblem } }, JobName
+        $sorted = $Instance.Jobs | Where-Object { $_.Listed -or $_.IsProblem } | Sort-Object @{ Expression = { -not $_.IsProblem } }, JobName
         foreach ($job in $sorted) {
             [void]$stack.Children.Add((New-JobExpander -Job $job))
         }
