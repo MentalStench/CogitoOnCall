@@ -1,3 +1,9 @@
+# TOOL_NAME: Congito On Call Helper
+# TOOL_DESC: Checks important SQL Agent Jobs, etc.
+# TOOL_ICON:📳
+# TOOL_CATEGORY: Utilities
+# TOOL_TYPE: gui
+
 # CogitoOnCall.ps1 - Entry point for the Cogito On Call Helper.
 #
 #   pwsh -ExecutionPolicy Bypass -File .\CogitoOnCall.ps1

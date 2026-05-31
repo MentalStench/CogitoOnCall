@@ -1,0 +1,111 @@
+{
+  "runHistoryCount": 5,
+  "instances": [
+    {
+      "name": "MDA Clarity PROD",
+      "server": "EHRCLRDBPRDQ",
+      "jobs": [
+        {
+          "name": "(DBA) SSAS Process CLARITY EpicCubes",
+          "schedule": "daily",
+          "expectedStartTime": "04:30",
+          "estimatedDurationMinutes": 165,
+          "lookbackHours": 24
+        },
+        {
+          "name": "LiteSpeed Backup FULL - Clarity DBs Only",
+          "schedule": ["Sat"],
+          "expectedStartTime": "08:00",
+          "estimatedDurationMinutes": 765,
+          "lookbackHours": 168
+        }
+      ]
+    },
+    {
+      "name": "MDA Caboodle PROD",
+      "server": "EHRCABDBPRDQ",
+      "jobs": [
+        {
+          "name": "(DBA) SSAS - Backup Cubes",
+          "schedule": ["Sun"],
+          "expectedStartTime": "20:00",
+          "estimatedDurationMinutes": 150,
+          "lookbackHours": 168
+        },
+        {
+          "name": "(DBA) SSAS Cubes Restore to EHRCUBEDCGV",
+          "schedule": ["Mon"],
+          "expectedStartTime": "04:00",
+          "estimatedDurationMinutes": 25,
+          "lookbackHours": 168
+        },
+        {
+          "name": "(DBA) SSAS Process DWCubes",
+          "schedule": ["Sun"],
+          "expectedStartTime": "09:00",
+          "estimatedDurationMinutes": 210,
+          "lookbackHours": 168
+        },
+        {
+          "name": "LiteSpeed Backup Full CDW_REPORTING Only",
+          "schedule": ["Sun"],
+          "expectedStartTime": "09:00",
+          "estimatedDurationMinutes": 105,
+          "lookbackHours": 168
+        }
+      ]
+    },
+    {
+      "name": "Caboodle SUP",
+      "server": "EHRCABDBSUPQ",
+      "jobs": [
+        {
+          "name": "(DBA) Post Database Restore Scripts",
+          "schedule": "daily",
+          "expectedStartTime": "08:00",
+          "estimatedDurationMinutes": 5,
+          "lookbackHours": 24
+        }
+      ]
+    },
+    {
+      "name": "Clarity SUP",
+      "server": "EHRCLRDBSUPQ",
+      "jobs": [
+        {
+          "name": "(DBA) Post Database Restore Scripts",
+          "schedule": "daily",
+          "expectedStartTime": "08:00",
+          "estimatedDurationMinutes": 5,
+          "lookbackHours": 24
+        }
+      ]
+    },
+    {
+      "name": "Caboodle STG",
+      "server": "EHRCABDBSTGQ",
+      "jobs": [
+        {
+          "name": "(DBA) Post Database Restore Scripts",
+          "schedule": ["Mon"],
+          "expectedStartTime": "08:00",
+          "estimatedDurationMinutes": 5,
+          "lookbackHours": 24
+        }
+      ]
+    },
+    {
+      "name": "Clarity STG",
+      "server": "EHRCLRDBSTGQ",
+      "jobs": [
+        {
+          "name": "(DBA) Post Database Restore Scripts",
+          "schedule": ["Mon"],
+          "expectedStartTime": "08:00",
+          "estimatedDurationMinutes": 5,
+          "lookbackHours": 24
+        }
+      ]
+    }
+  ]
+}
