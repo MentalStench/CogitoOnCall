@@ -16,6 +16,9 @@ param([switch]$InStaThread)
 $ErrorActionPreference = 'Stop'
 $scriptRoot = $PSScriptRoot
 
+Add-Type -Name Kernel32 -Namespace '' -MemberDefinition '[DllImport("kernel32.dll")] public static extern bool FreeConsole();'
+[Kernel32]::FreeConsole()
+
 function Start-StaIfNeeded {
     # Returns $true if it handed off to an STA runspace (caller should exit).
     if ($InStaThread -or [System.Threading.Thread]::CurrentThread.GetApartmentState() -eq 'STA') {

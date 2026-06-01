@@ -19,7 +19,21 @@
       "PowerShell(gh --version)",
       "PowerShell(gh auth status 2>&1)",
       "PowerShell(git init)",
-      "PowerShell(git add .)"
+      "PowerShell(git add .)",
+      "PowerShell(gh repo create CogitoOnCall --public --description \"PowerShell 7 + WPF on-call helper for monitoring SQL Server Agent jobs\" 2>&1)",
+      "PowerShell(git remote add origin https://github.com/MentalStench/CogitoOnCall.git)",
+      "PowerShell(git push -u origin master 2>&1)",
+      "Bash(git -C c:/dev/CogitoOnCall status)",
+      "Bash(git -C c:/dev/CogitoOnCall log --oneline -5)",
+      "Bash(git -C c:/dev/CogitoOnCall diff config.sample.json)",
+      "Bash(git -C c:/dev/CogitoOnCall diff .claude/settings.json)",
+      "Bash(git -C c:/dev/CogitoOnCall add CogitoOnCall.ps1 config.json config.sample.json src/Config.ps1 src/UI.ps1 src/DataCheck.ps1 src/DataCheckAnalysis.ps1 spec_2.md)",
+      "Bash(git -C c:/dev/CogitoOnCall commit -m ' *)",
+      "Bash(git -C c:/dev/CogitoOnCall push)",
+      "Bash(git -C c:/dev/CogitoOnCall add CogitoOnCall.ps1)",
+      "Bash(git -C c:/dev/CogitoOnCall pull --rebase)",
+      "Bash(git -C c:/dev/CogitoOnCall stash)",
+      "Bash(git -C c:/dev/CogitoOnCall stash pop)"
     ],
     "additionalDirectories": [
       "c:\\Users\\morga\\.claude\\projects\\c--dev-CogitoOnCall\\memory"
