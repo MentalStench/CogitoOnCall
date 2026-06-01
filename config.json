@@ -4,6 +4,19 @@
     {
       "name": "MDA Clarity PROD",
       "server": "EHRCLRDBPRDQ",
+      "dataChecks": [
+        {
+          "name": "HL7 Feed Latency (test)",
+          "query": "SELECT GETDATE(), GETDATE()",
+          "operation": "subtract",
+          "threshold": 1,
+          "thresholdDirection": "lte",
+          "col1Label": "Sent",
+          "col2Label": "Received",
+          "resultLabel": "Delta",
+          "noDataIsFailure": true
+        }
+      ],
       "jobs": [
         {
           "name": "(DBA) SSAS Process CLARITY EpicCubes",

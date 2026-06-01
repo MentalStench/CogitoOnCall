@@ -47,6 +47,8 @@ if (Start-StaIfNeeded) { return }
 . (Join-Path $scriptRoot 'src/Config.ps1')
 . (Join-Path $scriptRoot 'src/Database.ps1')
 . (Join-Path $scriptRoot 'src/JobAnalysis.ps1')
+. (Join-Path $scriptRoot 'src/DataCheck.ps1')
+. (Join-Path $scriptRoot 'src/DataCheckAnalysis.ps1')
 . (Join-Path $scriptRoot 'src/UI.ps1')
 
 function Invoke-CogitoScan {
@@ -80,7 +82,7 @@ function Invoke-CogitoScan {
         catch {
             [PSCustomObject]@{
                 Name = $inst.Name; Server = $inst.Server; Reachable = $false
-                Error = $_.Exception.Message; Jobs = @()
+                Error = $_.Exception.Message; Jobs = @(); DataCheckResults = @()
             }
             continue
         }
@@ -91,15 +93,32 @@ function Invoke-CogitoScan {
             $running = @(Get-RunningAgentJobs -Connection $conn)
             $jobs = Get-InstanceJobStatuses -InstanceConfig $inst -Catalog $catalog `
                 -History $history -RunningJobs $running -Now $Now -RunHistoryCount $Config.RunHistoryCount
+
+            $dataCheckResults = @()
+            if ($inst.DataChecks -and $inst.DataChecks.Count -gt 0) {
+                foreach ($check in $inst.DataChecks) {
+                    try {
+                        $row = Invoke-DataCheckQuery -Connection $conn -Check $check
+                        $dataCheckResults += Invoke-DataCheckAnalysis -Check $check -Row $row
+                    }
+                    catch {
+                        $dataCheckResults += [PSCustomObject]@{
+                            Name = $check.name; Status = 'Error'; IsProblem = $true
+                            ErrorMessage = $_.Exception.Message
+                        }
+                    }
+                }
+            }
+
             [PSCustomObject]@{
                 Name = $inst.Name; Server = $inst.Server; Reachable = $true
-                Error = $null; Jobs = @($jobs)
+                Error = $null; Jobs = @($jobs); DataCheckResults = $dataCheckResults
             }
         }
         catch {
             [PSCustomObject]@{
                 Name = $inst.Name; Server = $inst.Server; Reachable = $false
-                Error = "Query failed: $($_.Exception.Message)"; Jobs = @()
+                Error = "Query failed: $($_.Exception.Message)"; Jobs = @(); DataCheckResults = @()
             }
         }
         finally {

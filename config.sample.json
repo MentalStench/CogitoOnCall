@@ -26,6 +26,19 @@
           "estimatedDurationMinutes": 30,
           "lookbackHours": 8
         }
+      ],
+      "dataChecks": [
+        {
+          "name": "HL7 Feed Latency (test)",
+          "query": "SELECT GETDATE(), GETDATE()",
+          "operation": "subtract",
+          "threshold": 1,
+          "thresholdDirection": "lte",
+          "col1Label": "Sent",
+          "col2Label": "Received",
+          "resultLabel": "Delta",
+          "noDataIsFailure": true
+        }
       ]
     },
     {

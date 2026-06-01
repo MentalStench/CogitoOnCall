@@ -64,10 +64,65 @@ function Convert-ConfigInstance {
         }
     }
 
+    $dataChecks = @()
+    if ($Instance.dataChecks) {
+        $dataChecks = foreach ($check in $Instance.dataChecks) {
+            Convert-ConfigDataCheck -Check $check -ServerName $displayName
+        }
+    }
+
     [PSCustomObject]@{
-        Name   = $displayName
-        Server = $Instance.server
-        Jobs   = @($jobs)
+        Name        = $displayName
+        Server      = $Instance.server
+        Jobs        = @($jobs)
+        DataChecks  = @($dataChecks)
+    }
+}
+
+function Convert-ConfigDataCheck {
+    param(
+        [Parameter(Mandatory)]$Check,
+        [Parameter(Mandatory)][string]$ServerName
+    )
+
+    $requiredStrings = @('name', 'query', 'operation', 'thresholdDirection', 'col1Label', 'col2Label', 'resultLabel')
+    foreach ($f in $requiredStrings) {
+        if ([string]::IsNullOrWhiteSpace($Check.$f)) {
+            throw "A dataCheck under instance '$ServerName' is missing '$f'."
+        }
+    }
+
+    $validOps = @('subtract', 'divide', 'absSubtract', 'col1Only')
+    if ($Check.operation -notin $validOps) {
+        throw "dataCheck '$($Check.name)': invalid operation '$($Check.operation)'. Must be one of: $($validOps -join ', ')."
+    }
+
+    $validDirs = @('lte', 'gte')
+    if ($Check.thresholdDirection -notin $validDirs) {
+        throw "dataCheck '$($Check.name)': invalid thresholdDirection '$($Check.thresholdDirection)'. Must be 'lte' or 'gte'."
+    }
+
+    if ($null -eq $Check.threshold) {
+        throw "dataCheck '$($Check.name)': missing 'threshold'."
+    }
+    $threshold = $null
+    try { $threshold = [double]$Check.threshold } catch {
+        throw "dataCheck '$($Check.name)': threshold must be a number."
+    }
+    if ($threshold -le 0) {
+        throw "dataCheck '$($Check.name)': threshold must be > 0."
+    }
+
+    [PSCustomObject]@{
+        name               = [string]$Check.name
+        query              = [string]$Check.query
+        operation          = [string]$Check.operation
+        threshold          = $threshold
+        thresholdDirection = [string]$Check.thresholdDirection
+        col1Label          = [string]$Check.col1Label
+        col2Label          = [string]$Check.col2Label
+        resultLabel        = [string]$Check.resultLabel
+        noDataIsFailure    = [bool]$Check.noDataIsFailure
     }
 }
 

@@ -16,6 +16,10 @@ $script:StatusVisuals = @{
     'NotScheduled'  = @{ Color = '#757575'; Label = 'NOT SCHEDULED' }
     'NoRecentRuns'  = @{ Color = '#757575'; Label = 'NO RECENT RUNS' }
     'Unreachable'   = @{ Color = '#EF6C00'; Label = 'UNREACHABLE' }
+    # Data check statuses
+    'NoData'        = @{ Color = '#C62828'; Label = 'NO DATA' }
+    'NoDataGray'    = @{ Color = '#757575'; Label = 'NO DATA' }
+    'Error'         = @{ Color = '#C62828'; Label = 'ERROR' }
 }
 
 function New-Brush {
@@ -147,6 +151,94 @@ function New-JobExpander {
     $exp
 }
 
+function New-DataCheckRow {
+    param([Parameter(Mandatory)]$Result)
+
+    # Header: pill + bold name + one-line summary
+    $header = New-Object System.Windows.Controls.StackPanel
+    $header.Orientation = 'Horizontal'
+    $header.Margin = [System.Windows.Thickness]::new(0, 2, 0, 2)
+
+    $pill = New-StatusPill -Status $Result.Status -MinWidth 80
+    [void]$header.Children.Add($pill)
+
+    $name = New-TextBlock -Text $Result.Name -FontSize 13 -Weight 'Bold'
+    $name.Margin = [System.Windows.Thickness]::new(10, 0, 10, 0)
+    [void]$header.Children.Add($name)
+
+    $summaryText = switch ($Result.Status) {
+        { $_ -in 'NoData', 'NoDataGray' } { 'No data returned' }
+        'Error'                            { 'Error — see details' }
+        default {
+            if ($null -ne $Result.ResultValue) {
+                "$($Result.ResultLabel): $($Result.ResultValue) | threshold: $($Result.Threshold)"
+            } else { '' }
+        }
+    }
+    $summary = New-TextBlock -Text $summaryText -FontSize 11 -Foreground '#616161'
+    [void]$header.Children.Add($summary)
+
+    # Expander
+    $exp = New-Object System.Windows.Controls.Expander
+    $exp.Header = $header
+    $exp.Margin = [System.Windows.Thickness]::new(0, 1, 0, 1)
+    $exp.Background = New-Brush '#FAFAFA'
+
+    # Content: col values, result, error
+    $content = New-Object System.Windows.Controls.StackPanel
+    $content.Margin = [System.Windows.Thickness]::new(30, 6, 10, 10)
+
+    if ($null -ne $Result.Col1Value -and $Result.Col1Label) {
+        [void]$content.Children.Add((New-TextBlock -Text "$($Result.Col1Label): $($Result.Col1Value)" -FontSize 11))
+    }
+    if ($null -ne $Result.Col2Value -and $Result.Col2Label) {
+        [void]$content.Children.Add((New-TextBlock -Text "$($Result.Col2Label): $($Result.Col2Value)" -FontSize 11))
+    }
+    if ($null -ne $Result.ResultValue -and $Result.ResultLabel) {
+        $dirText = if ($Result.ThresholdDirection -eq 'lte') { '≤' } else { '≥' }
+        [void]$content.Children.Add((New-TextBlock -Text "$($Result.ResultLabel): $($Result.ResultValue) (threshold: $dirText $($Result.Threshold))" -FontSize 11))
+    }
+
+    if ($Result.Status -eq 'Error' -and $Result.ErrorMessage) {
+        $err = New-Object System.Windows.Controls.TextBox
+        $err.Text = [string]$Result.ErrorMessage
+        $err.IsReadOnly = $true
+        $err.TextWrapping = 'Wrap'
+        $err.BorderThickness = [System.Windows.Thickness]::new(0)
+        $err.Background = New-Brush '#FFF3E0'
+        $err.Foreground = New-Brush '#BF360C'
+        $err.Padding = [System.Windows.Thickness]::new(6)
+        $err.Margin = [System.Windows.Thickness]::new(0, 4, 0, 0)
+        [void]$content.Children.Add($err)
+    }
+
+    $exp.Content = $content
+    $exp
+}
+
+function New-DataChecksSection {
+    param([AllowEmptyCollection()][object[]]$DataCheckResults)
+
+    if (-not $DataCheckResults -or $DataCheckResults.Count -eq 0) { return $null }
+
+    $label = New-TextBlock -Text 'Data Checks' -FontSize 14 -Weight 'Bold' -Foreground '#37474F'
+    $label.Margin = [System.Windows.Thickness]::new(0, 0, 0, 6)
+
+    $inner = New-Object System.Windows.Controls.StackPanel
+    [void]$inner.Children.Add($label)
+    foreach ($result in $DataCheckResults) {
+        [void]$inner.Children.Add((New-DataCheckRow -Result $result))
+    }
+
+    $border = New-Object System.Windows.Controls.Border
+    $border.BorderBrush = New-Brush '#B0BEC5'
+    $border.BorderThickness = [System.Windows.Thickness]::new(0, 0, 0, 1)
+    $border.Padding = [System.Windows.Thickness]::new(0, 0, 0, 8)
+    $border.Margin = [System.Windows.Thickness]::new(0, 0, 0, 8)
+    $border.Child = $inner
+    $border
+}
+
 function New-InstanceSection {
     param([Parameter(Mandatory)]$Instance)
 
@@ -176,7 +268,9 @@ function New-InstanceSection {
         [void]$headerRow.Children.Add($pill)
     }
     else {
-        $count = @($Instance.Jobs | Where-Object { $_.IsProblem }).Count
+        $jobProblems = @($Instance.Jobs | Where-Object { $_.IsProblem }).Count
+        $dataCheckProblems = @($Instance.DataCheckResults | Where-Object { $_.IsProblem }).Count
+        $count = $jobProblems + $dataCheckProblems
         $summaryColor = if ($count -gt 0) { '#C62828' } else { '#2E7D32' }
         $summaryText = if ($count -gt 0) { "  $count issue(s)" } else { '  All clear' }
         [void]$headerRow.Children.Add((New-TextBlock -Text $summaryText -FontSize 12 -Weight 'Bold' -Foreground $summaryColor))
@@ -188,12 +282,18 @@ function New-InstanceSection {
         [void]$stack.Children.Add($errBox)
     }
     else {
+        # Data checks above job list
+        $dataChecksSection = New-DataChecksSection -DataCheckResults @($Instance.DataCheckResults)
+        if ($null -ne $dataChecksSection) {
+            [void]$stack.Children.Add($dataChecksSection)
+        }
+
         # Problems first, then by name.
         $sorted = $Instance.Jobs | Where-Object { $_.Listed -or $_.IsProblem } | Sort-Object @{ Expression = { -not $_.IsProblem } }, JobName
         foreach ($job in $sorted) {
             [void]$stack.Children.Add((New-JobExpander -Job $job))
         }
-        if (@($Instance.Jobs).Count -eq 0) {
+        if (@($Instance.Jobs).Count -eq 0 -and @($Instance.DataCheckResults).Count -eq 0) {
             [void]$stack.Children.Add((New-TextBlock -Text 'No jobs to report.' -FontSize 12 -Foreground '#9E9E9E'))
         }
     }
@@ -267,7 +367,10 @@ function Show-MainWindow {
             $problemCount = 0
             foreach ($r in $results) {
                 if (-not $r.Reachable) { $problemCount++ }
-                else { $problemCount += @($r.Jobs | Where-Object { $_.IsProblem }).Count }
+                else {
+                    $problemCount += @($r.Jobs | Where-Object { $_.IsProblem }).Count
+                    $problemCount += @($r.DataCheckResults | Where-Object { $_.IsProblem }).Count
+                }
             }
             $stamp = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             $statusText.Text = if ($problemCount -gt 0) {
