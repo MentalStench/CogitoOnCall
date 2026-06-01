@@ -2,21 +2,26 @@
   "runHistoryCount": 5,
   "instances": [
     {
-      "name": "MDA Clarity PROD",
-      "server": "EHRCLRDBPRDQ",
+      "name": "Epic Caboodle PROD",
+      "server": "CDWPRD",
       "dataChecks": [
         {
-          "name": "HL7 Feed Latency (test)",
-          "query": "SELECT GETDATE(), GETDATE()",
+          "name": "DAG Latency",
+          "query": "SELECT drs.last_sent_time [Col1Value], drs.last_redone_time [Col2Value] FROM sys.dm_hadr_database_replica_states drs JOIN sys.availability_replicas ar ON drs.replica_id = ar.replica_id JOIN sys.availability_groups ag ON ar.group_id = ag.group_id WHERE ar.replica_server_name = 'CDW_PRD_AG';",
           "operation": "subtract",
-          "threshold": 1,
+          "threshold": 90,
           "thresholdDirection": "lte",
           "col1Label": "Sent",
-          "col2Label": "Received",
-          "resultLabel": "Delta",
+          "col2Label": "Redone",
+          "resultLabel": "Lag",
           "noDataIsFailure": true
         }
-      ],
+      ]
+    },
+    
+    {
+      "name": "MDA Clarity PROD",
+      "server": "EHRCLRDBPRDQ",
       "jobs": [
         {
           "name": "(DBA) SSAS Process CLARITY EpicCubes",
