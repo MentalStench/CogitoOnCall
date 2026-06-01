@@ -88,11 +88,14 @@ function Invoke-CogitoScan {
         }
 
         try {
-            $catalog = @(Get-AgentJobCatalog -Connection $conn)
-            $history = @(Get-AgentJobHistory -Connection $conn -SinceDate $sinceDate)
-            $running = @(Get-RunningAgentJobs -Connection $conn)
-            $jobs = Get-InstanceJobStatuses -InstanceConfig $inst -Catalog $catalog `
-                -History $history -RunningJobs $running -Now $Now -RunHistoryCount $Config.RunHistoryCount
+            $jobs = @()
+            if ($inst.Jobs -and $inst.Jobs.Count -gt 0) {
+                $catalog = @(Get-AgentJobCatalog -Connection $conn)
+                $history = @(Get-AgentJobHistory -Connection $conn -SinceDate $sinceDate)
+                $running = @(Get-RunningAgentJobs -Connection $conn)
+                $jobs = Get-InstanceJobStatuses -InstanceConfig $inst -Catalog $catalog `
+                    -History $history -RunningJobs $running -Now $Now -RunHistoryCount $Config.RunHistoryCount
+            }
 
             $dataCheckResults = @()
             if ($inst.DataChecks -and $inst.DataChecks.Count -gt 0) {
